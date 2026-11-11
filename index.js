@@ -971,7 +971,7 @@ client.on(Events.InteractionCreate, async interaction => {
         components: [row]
       });
 
-      return interaction.followUp({
+      return interaction.reply({
   content: '✅ Başvuru paneli gönderildi!',
   ephemeral: true
 });

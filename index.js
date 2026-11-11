@@ -167,9 +167,11 @@ const SPAM_RESET_MS = 10 * 60 * 1000; // 10 dakika
                 .setDescription('Kazanan kişinin Discord kullanıcı IDsi')
                 .setRequired(true)
         ),
+            new SlashCommandBuilder()
+        .setName('başvurupanel')
+        .setDescription('XRX özel rol başvuru panelini oluşturur'),
 
-   
-          new SlashCommandBuilder()
+             new SlashCommandBuilder()
         .setName('musicpanel')
         .setDescription('XRX müzik panelini oluşturur')
         .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
@@ -925,6 +927,245 @@ return;
         await interaction.editReply('❌ Ses kanalına bağlanamadım. Terminali kontrol et.');
     }
 });
+
+const APP_CHANNEL_ID = '1566391536218804244';
+const APP_OWNER_ROLE_ID = '1502575396066033674';
+
+// XRX Özel Rol Başvuru Sistemi
+client.on(Events.InteractionCreate, async interaction => {
+  try {
+    // Başvuru paneli komutu
+    if (
+      interaction.isChatInputCommand() &&
+      interaction.commandName === 'başvurupanel'
+    ) {
+      const member = await interaction.guild.members.fetch(interaction.user.id);
+
+      if (!member.roles.cache.has(APP_OWNER_ROLE_ID)) {
+        return interaction.reply({
+          content: '❌ Bu komutu yalnızca Owner kullanabilir.',
+          ephemeral: true
+        });
+      }
+
+      const embed = new EmbedBuilder()
+        .setColor(0x8B5CF6)
+        .setTitle('XRX | Özel Rol Başvuruları')
+        .setDescription(
+          'Özel rol sahibi olmak istiyorsan aşağıdaki butona basarak başvurunu gönderebilirsin.\n\n' +
+          '🌟 **Başvurulabilecek roller:** Legend – Senior Manager\n' +
+          '📌 Başvurular yönetim ekibi tarafından incelenecektir.'
+        )
+        .setFooter({ text: 'XRX SYSTEM • Başvuru Sistemi' });
+
+      const row = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+          .setCustomId('xrx_app_start')
+          .setLabel('Başvur')
+          .setEmoji('🌟')
+          .setStyle(ButtonStyle.Primary)
+      );
+
+      await interaction.channel.send({
+        embeds: [embed],
+        components: [row]
+      });
+
+      return interaction.reply({
+        content: '✅ Başvuru paneli gönderildi!',
+        ephemeral: true
+      });
+    }
+
+    // Başvuru formunu aç
+    if (
+      interaction.isButton() &&
+      interaction.customId === 'xrx_app_start'
+    ) {
+      const {
+        ModalBuilder,
+        TextInputBuilder,
+        TextInputStyle
+      } = require('discord.js');
+
+      const modal = new ModalBuilder()
+        .setCustomId('xrx_app_modal')
+        .setTitle('XRX Özel Rol Başvurusu');
+
+      const questions = [
+        ['app_role', 'Hangi özel rolü istiyorsun? (Legend-Senior Manager)', true],
+        ['app_reason', 'Bu rolü neden istiyorsun?', true],
+        ['app_deserve', 'Bu rolü neden hak ettiğini düşünüyorsun?', true],
+        ['app_activity', 'Ne sıklıkla yazıyorsun?', true],
+        ['app_extra', 'Eklemek istediğin bir şey var mı?', false]
+      ];
+
+      modal.addComponents(
+        ...questions.map(([id, label, required]) =>
+          new ActionRowBuilder().addComponents(
+            new TextInputBuilder()
+              .setCustomId(id)
+              .setLabel(label)
+              .setStyle(TextInputStyle.Paragraph)
+              .setRequired(required)
+              .setMaxLength(500)
+          )
+        )
+      );
+
+      return interaction.showModal(modal);
+    }
+
+    // Başvuruyu gönder
+    if (
+      interaction.isModalSubmit() &&
+      interaction.customId === 'xrx_app_modal'
+    ) {
+      const channel = await interaction.guild.channels.fetch(APP_CHANNEL_ID);
+
+      if (!channel || !channel.isTextBased()) {
+        return interaction.reply({
+          content: '❌ Başvuru kanalı bulunamadı.',
+          ephemeral: true
+        });
+      }
+
+      const cevaplar = [
+        ['İstenen Rol', 'app_role'],
+        ['Başvuru Nedeni', 'app_reason'],
+        ['Neden Hak Ediyorsun?', 'app_deserve'],
+        ['Aktiflik', 'app_activity'],
+        ['Ek Bilgi', 'app_extra']
+      ];
+
+      const embed = new EmbedBuilder()
+        .setColor(0x8B5CF6)
+        .setTitle('🌟 XRX | Yeni Özel Rol Başvurusu')
+        .setDescription(`**Başvuran:** ${interaction.user} (\`${interaction.user.id}\`)`)
+        .addFields(
+          ...cevaplar.map(([label, id]) => ({
+            name: label,
+            value: interaction.fields.getTextInputValue(id) || 'Belirtilmedi',
+            inline: false
+          })),
+          { name: 'Durum', value: '🟡 İnceleme bekliyor' }
+        )
+        .setThumbnail(interaction.user.displayAvatarURL())
+        .setFooter({ text: 'XRX SYSTEM • Başvuru Sistemi' })
+        .setTimestamp();
+
+      const row = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+          .setCustomId(`xrx_app_approve_${interaction.user.id}`)
+          .setLabel('Onayla')
+          .setEmoji('✅')
+          .setStyle(ButtonStyle.Success),
+        new ButtonBuilder()
+          .setCustomId(`xrx_app_reject_${interaction.user.id}`)
+          .setLabel('Reddet')
+          .setEmoji('❌')
+          .setStyle(ButtonStyle.Danger),
+        new ButtonBuilder()
+          .setCustomId(`xrx_app_review_${interaction.user.id}`)
+          .setLabel('İnceleniyor')
+          .setEmoji('🔎')
+          .setStyle(ButtonStyle.Secondary)
+      );
+
+      await channel.send({
+        embeds: [embed],
+        components: [row]
+      });
+
+      return interaction.reply({
+        content: '✅ Başvurun başarıyla gönderildi!',
+        ephemeral: true
+      });
+    }
+
+    // Owner başvuru işlemleri
+    if (
+      interaction.isButton() &&
+      interaction.customId.startsWith('xrx_app_') &&
+      interaction.customId !== 'xrx_app_start'
+    ) {
+      const member = await interaction.guild.members.fetch(interaction.user.id);
+
+      if (!member.roles.cache.has(APP_OWNER_ROLE_ID)) {
+        return interaction.reply({
+          content: '❌ Bu işlemi yalnızca Owner yetkilileri yapabilir.',
+          ephemeral: true
+        });
+      }
+
+      const parts = interaction.customId.split('_');
+      const action = parts[2];
+      const applicantId = parts[3];
+
+      const applicant = await client.users.fetch(applicantId).catch(() => null);
+
+      if (!applicant) {
+        return interaction.reply({
+          content: '❌ Başvuru sahibi bulunamadı.',
+          ephemeral: true
+        });
+      }
+
+      const embed = EmbedBuilder.from(interaction.message.embeds[0]);
+      const fields = embed.data.fields || [];
+
+      let status;
+      let dm;
+
+      if (action === 'approve') {
+        status = '✅ Başvuru onaylandı';
+        dm = '🎉 Başvurun kabul edildi! Rolünü teslim almak için bir Owner ile iletişime geç.';
+      } else if (action === 'reject') {
+        status = '❌ Başvurun reddedildi.';
+        dm = '❌ XRX özel rol başvurun maalesef reddedildi.';
+      } else if (action === 'review') {
+        status = '🔎 Başvurun inceleniyor';
+        dm = '🔎 XRX özel rol başvurun inceleniyor. Sonuçlandığında sana tekrar mesaj gönderilecek.';
+      } else {
+        return;
+      }
+
+      embed.setFields(
+        ...fields.filter(field => field.name !== 'Durum'),
+        { name: 'Durum', value: status },
+        { name: 'İşlemi Yapan', value: `${interaction.user}` }
+      );
+
+      const disabledRow = new ActionRowBuilder().addComponents(
+        ...interaction.message.components[0].components.map(button => {
+          const isReviewButton = button.customId.startsWith('xrx_app_review_');
+          const disableAll = action === 'approve' || action === 'reject';
+
+          return ButtonBuilder.from(button).setDisabled(
+            disableAll || (action === 'review' && isReviewButton)
+          );
+        })
+      );
+
+      await interaction.update({
+        embeds: [embed],
+        components: [disabledRow]
+      });
+
+      await applicant.send(dm).catch(() => null);
+    }
+  } catch (error) {
+    console.error('XRX Başvuru Sistemi Hatası:', error);
+
+    if (!interaction.replied && !interaction.deferred) {
+      await interaction.reply({
+        content: '❌ Bir hata oluştu. Bot konsolunu kontrol edin.',
+        ephemeral: true
+      }).catch(() => {});
+    }
+  }
+});
+
 client.login(process.env.DISCORD_TOKEN);
 client.once('clientReady', () => {
     client.user.setStatus('dnd');

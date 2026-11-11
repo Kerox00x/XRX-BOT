@@ -48,6 +48,12 @@ const ticketCategories = [
     emoji: '🚨'
   },
   {
+    label: 'Yetkili Şikâyeti',
+    description: 'Bir yetkiliyi şikâyet et',
+    value: 'yetkili',
+    emoji: '⚖️'
+  },
+  {
     label: 'Diğer',
     description: 'Diğer destek talepleri',
     value: 'diger',

@@ -954,6 +954,7 @@ client.on(Events.InteractionCreate, async interaction => {
         .setDescription(
           'Özel rol sahibi olmak istiyorsan aşağıdaki butona basarak başvurunu gönderebilirsin.\n\n' +
           '🌟 **Başvurulabilecek roller:** Legend – Senior Manager\n' +
+          
           '📌 Başvurular yönetim ekibi tarafından incelenecektir.'
         )
         .setFooter({ text: 'XRX SYSTEM • Başvuru Sistemi' });

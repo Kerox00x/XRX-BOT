@@ -49,7 +49,7 @@ const ticketCategories = [
   },
   {
     label: 'Yetkili Şikâyeti',
-    description: 'Bir yetkiliyi şikâyet et',
+    description: 'Bir yetkili hakkındaki şikâyetinizi iletin. Bu ticket yalnızca Owner yetkilileri tarafından görüntülenebilir.',
     value: 'yetkili',
     emoji: '⚖️'
   },
@@ -689,58 +689,65 @@ client.on(Events.InteractionCreate, async interaction => {
   type: ChannelType.GuildText,
   parent: "1510938621136605296",
   permissionOverwrites: [
-    
-{
-  id: '1563238275848732712',
-  allow: [
-    PermissionFlagsBits.ViewChannel,
-    PermissionFlagsBits.SendMessages,
-    PermissionFlagsBits.ReadMessageHistory
-  ]
-},
-{
-  id: '1502581042140155985',
-  allow: [
-    PermissionFlagsBits.ViewChannel,
-    PermissionFlagsBits.SendMessages,
-    PermissionFlagsBits.ReadMessageHistory
-  ]
-},
-{
-  id: '1502575696256696512',
-  allow: [
-    PermissionFlagsBits.ViewChannel,
-    PermissionFlagsBits.SendMessages,
-    PermissionFlagsBits.ReadMessageHistory
-  ]
-},
-
-      {
-        id: interaction.guild.id,
-        deny: [PermissionFlagsBits.ViewChannel]
-      },
-          {
-            id: interaction.guild.id,
-            deny: [PermissionFlagsBits.ViewChannel]
-          },
-          {
-            id: interaction.user.id,
-            allow: [
-              PermissionFlagsBits.ViewChannel,
-              PermissionFlagsBits.SendMessages,
-              PermissionFlagsBits.ReadMessageHistory
-            ]
-          },
-          {
-            id: client.user.id,
-            allow: [
-              PermissionFlagsBits.ViewChannel,
-              PermissionFlagsBits.SendMessages,
-              PermissionFlagsBits.ReadMessageHistory,
-              PermissionFlagsBits.ManageChannels
-            ]
-          }
-        ]
+  {
+    id: interaction.guild.id,
+    deny: [PermissionFlagsBits.ViewChannel]
+  },
+  ...(selected.value === 'yetkili'
+    ? [
+        {
+          id: '1502575396066033674',
+          allow: [
+            PermissionFlagsBits.ViewChannel,
+            PermissionFlagsBits.SendMessages,
+            PermissionFlagsBits.ReadMessageHistory
+          ]
+        }
+      ]
+    : [
+        {
+          id: '1563238275848732712',
+          allow: [
+            PermissionFlagsBits.ViewChannel,
+            PermissionFlagsBits.SendMessages,
+            PermissionFlagsBits.ReadMessageHistory
+          ]
+        },
+        {
+          id: '1502581042140155985',
+          allow: [
+            PermissionFlagsBits.ViewChannel,
+            PermissionFlagsBits.SendMessages,
+            PermissionFlagsBits.ReadMessageHistory
+          ]
+        },
+        {
+          id: '1502575696256696512',
+          allow: [
+            PermissionFlagsBits.ViewChannel,
+            PermissionFlagsBits.SendMessages,
+            PermissionFlagsBits.ReadMessageHistory
+          ]
+        }
+      ]),
+  {
+    id: interaction.user.id,
+    allow: [
+      PermissionFlagsBits.ViewChannel,
+      PermissionFlagsBits.SendMessages,
+      PermissionFlagsBits.ReadMessageHistory
+    ]
+  },
+  {
+    id: client.user.id,
+    allow: [
+      PermissionFlagsBits.ViewChannel,
+      PermissionFlagsBits.SendMessages,
+      PermissionFlagsBits.ReadMessageHistory,
+      PermissionFlagsBits.ManageChannels
+    ]
+  }
+]
       });
 
       const closeButton = new ActionRowBuilder()

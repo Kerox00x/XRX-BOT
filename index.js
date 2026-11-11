@@ -971,10 +971,10 @@ client.on(Events.InteractionCreate, async interaction => {
         components: [row]
       });
 
-      return interaction.reply({
-        content: '✅ Başvuru paneli gönderildi!',
-        ephemeral: true
-      });
+      return interaction.followUp({
+  content: '✅ Başvuru paneli gönderildi!',
+  ephemeral: true
+});
     }
 
     // Başvuru formunu aç

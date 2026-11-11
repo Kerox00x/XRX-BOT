@@ -993,7 +993,7 @@ client.on(Events.InteractionCreate, async interaction => {
         .setTitle('XRX Özel Rol Başvurusu');
 
       const questions = [
-        ['app_role', 'Hangi özel rolü istiyorsun? (Legend-Senior Manager)', true],
+        ['app_role', 'Hangi özel rolü istiyorsun?', true],
         ['app_reason', 'Bu rolü neden istiyorsun?', true],
         ['app_deserve', 'Bu rolü neden hak ettiğini düşünüyorsun?', true],
         ['app_activity', 'Ne sıklıkla yazıyorsun?', true],

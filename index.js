@@ -22,7 +22,10 @@ const {
   entersState
 } = require('@discordjs/voice');
 
-const ffmpegPath = require('ffmpeg-static');
+const ffmpegPath = process.platform === 'android'
+  ? '/data/data/com.termux/files/usr/bin/ffmpeg'
+  : require('ffmpeg-static');
+
 const MUSIC_VOICE_CHANNEL_ID = '1565642176564695140';
 
 const {

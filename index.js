@@ -52,7 +52,7 @@ const ticketCategories = [
   },
   {
     label: 'Yetkili Şikâyeti',
-    description: 'Bir yetkili hakkındaki şikâyetinizi iletin. Bu ticket yalnızca Owner yetkilileri tarafından görüntülenebilir.',
+    description: 'Bu ticket yalnızca Owner yetkilileri tarafından görüntülenir.',
     value: 'yetkili',
     emoji: '⚖️'
   },

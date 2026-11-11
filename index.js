@@ -102,16 +102,9 @@ const MUSIC_STATIONS = {
 
 // Mesaj sayıları sadece RAM'de tutulur, dosyaya kaydedilmez.
 let messageCounts = {};
-// XRX XP ve seviye sistemi — geçici bellek
-const xpData = {};
-const xpCooldown = new Map();
 
-const LEVEL_CHANNEL_ID = '1507812281269096499';
-const XP_COOLDOWN_MS = 60000;
 
-function gerekenXP(level) {
-  return 100 + (level * 50);
-}
+
 // XRX Anti-Spam — geçici bellek, dosyaya kayıt yok
 const spamTracker = new Map();
 
@@ -174,15 +167,8 @@ const SPAM_RESET_MS = 10 * 60 * 1000; // 10 dakika
                 .setDescription('Kazanan kişinin Discord kullanıcı IDsi')
                 .setRequired(true)
         ),
-    new SlashCommandBuilder()
-      .setName('profil')
-      .setDescription('Bir üyenin XRX seviye profilini gösterir')
-      .addUserOption(option =>
-        option
-          .setName('uye')
-          .setDescription('Profilini görmek istediğin üye')
-          .setRequired(false)
-      ),
+
+   
           new SlashCommandBuilder()
         .setName('musicpanel')
         .setDescription('XRX müzik panelini oluşturur')
@@ -318,58 +304,7 @@ client.on(Events.MessageCreate, async message => {
       ).catch(() => {});
     }
   }
-  // XRX XP KAZANMA SİSTEMİ
-  const xpKey = `${message.guild.id}:${message.author.id}`;
-  const xpNow = Date.now();
-  const lastXpTime = xpCooldown.get(xpKey) || 0;
-
-  if (xpNow - lastXpTime >= XP_COOLDOWN_MS) {
-    xpCooldown.set(xpKey, xpNow);
-
-    if (!xpData[message.guild.id]) {
-      xpData[message.guild.id] = {};
-    }
-
-    if (!xpData[message.guild.id][message.author.id]) {
-      xpData[message.guild.id][message.author.id] = {
-        xp: 0,
-        level: 0
-      };
-    }
-
-    const userXp = xpData[message.guild.id][message.author.id];
-
-    userXp.xp += Math.floor(Math.random() * 11) + 15;
-
-    while (userXp.xp >= gerekenXP(userXp.level)) {
-      userXp.xp -= gerekenXP(userXp.level);
-      userXp.level++;
-
-      const levelChannel = message.guild.channels.cache.get(
-        LEVEL_CHANNEL_ID
-      );
-
-      if (levelChannel && levelChannel.isTextBased()) {
-        const levelEmbed = new EmbedBuilder()
-          .setColor(0x8B5CF6)
-          .setAuthor({
-            name: `${message.author.username} seviye atladı!`,
-            iconURL: message.author.displayAvatarURL()
-          })
-          .setThumbnail(message.author.displayAvatarURL({
-            size: 256
-          }))
-          .setTitle('⬆️ XRX | LEVEL UP!')
-          .setDescription(
-            `${message.author} artık **${userXp.level}. seviye!**`
-          )
-          
-          .setFooter({ text: 'XRX SYSTEM • Seviye Sistemi' });
-
-        levelChannel.send({ embeds: [levelEmbed] }).catch(console.error);
-      }
-    }
-  }
+  
   const guildId = message.guild.id;
   
   const userId = message.author.id;
@@ -851,102 +786,9 @@ return;
     }
   }
 });
-// XRX SES XP SİSTEMİ
-const voiceXpTimers = new Map();
 
-client.on(Events.VoiceStateUpdate, (oldState, newState) => {
-  const member = newState.member || oldState.member;
-
-  if (!member || member.user.bot) return;
-
-  const userId = member.id;
-  const guildId = member.guild.id;
-  const key = `${guildId}:${userId}`;
-
-  // Sesten çıkınca veya başka kanala geçince zamanlayıcıyı durdur
-  if (!newState.channelId) {
-    const timer = voiceXpTimers.get(key);
-
-    if (timer) clearInterval(timer);
-
-    voiceXpTimers.delete(key);
-    return;
-  }
-
-  // Zaten ses kanalındaysa ikinci zamanlayıcı oluşturma
-  if (voiceXpTimers.has(key)) return;
-
-  const timer = setInterval(() => {
-    if (!xpData[guildId]) xpData[guildId] = {};
-
-    if (!xpData[guildId][userId]) {
-      xpData[guildId][userId] = { xp: 0, level: 0 };
-    }
-
-    const userXp = xpData[guildId][userId];
-
-    userXp.xp += 20;
-
-    while (userXp.xp >= gerekenXP(userXp.level)) {
-      userXp.xp -= gerekenXP(userXp.level);
-      userXp.level++;
-
-      const kanal = member.guild.channels.cache.get(LEVEL_CHANNEL_ID);
-
-      if (kanal && kanal.isTextBased()) {
-        const embed = new EmbedBuilder()
-          .setColor(0x8B5CF6)
-          .setTitle('🔊 XRX | SES SEVİYESİ')
-          .setThumbnail(member.user.displayAvatarURL())
-          .setDescription(
-            `${member} ses kanalında vakit geçirerek **${userXp.level}. seviyeye** ulaştı!`
-          )
-          .setFooter({ text: 'XRX SYSTEM • Seviye Sistemi' });
-
-        kanal.send({ embeds: [embed] }).catch(console.error);
-      }
-    }
-  }, 5 * 60 * 1000);
-
-  voiceXpTimers.set(key, timer);
-  });
   
-client.on(Events.InteractionCreate, async interaction => {
-  if (!interaction.isChatInputCommand()) return;
-  if (interaction.commandName !== 'profil') return;
 
-  const uye = interaction.options.getUser('uye') || interaction.user;
-  const guildId = interaction.guildId;
-
-  const veri = xpData[guildId]?.[uye.id] || {
-    xp: 0,
-    level: 0
-  };
-
-  const gereken = gerekenXP(veri.level);
-  const ilerleme = Math.min(100, Math.floor((veri.xp / gereken) * 100));
-  const dolu = Math.floor(ilerleme / 10);
-  const cubuk = '🟪'.repeat(dolu) + '⬛'.repeat(10 - dolu);
-
-  const embed = new EmbedBuilder()
-    .setColor(0x8B5CF6)
-    .setAuthor({
-      name: `XRX | ${uye.username} profili`,
-      iconURL: uye.displayAvatarURL()
-    })
-    .setThumbnail(uye.displayAvatarURL({ size: 256 }))
-    .setDescription(
-      `👤 **Üye:** ${uye}\n` +
-      `🏆 **Seviye:** ${veri.level}\n` +
-      `✨ **XP:** ${veri.xp} / ${gereken}\n\n` +
-      `**Seviye ilerlemesi — %${ilerleme}**\n` +
-      `${cubuk}`
-    )
-    .setFooter({ text: 'XRX SYSTEM • Profil' });
-
-  await interaction.deferReply();
-await interaction.editReply({ embeds: [embed] });
-});
 client.on(Events.InteractionCreate, async interaction => {
     if (!interaction.isChatInputCommand()) return;
     if (interaction.commandName !== 'musicpanel') return;

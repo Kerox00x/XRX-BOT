@@ -319,14 +319,18 @@ client.on(Events.MessageCreate, async message => {
     (messageCounts[guildId][userId] || 0) + 1;
 
   
-  const yazi = message.content.trim().toLocaleLowerCase('tr-TR');
+  const yazi = message.content.trim()
+    .toLocaleLowerCase('tr-TR')
+    .replace(/ı/g, 'i');
 
-  if (yazi === 'sa') message.reply('as');
-  if (yazi === 'naber') message.reply('iyilik senden');
+  if (['sa', 'naber'].includes(yazi)) {
+  if (yazi === 'sa') message.reply('Aleyküm selam');
+  if (yazi === 'naber') message.reply('İyilik senden');
+}
 
-  if (yazi === 'günaydın' || yazi === 'gunaydin') {
-    message.reply('UYKUCU Günaydın');
-  }
+if (['günaydın', 'gunaydin', 'günaydin', 'gunaydın'].includes(yazi)) {
+  message.reply('Günaydın Uykucu ☀️');
+}
 });
 
 // /mesajlar komutu

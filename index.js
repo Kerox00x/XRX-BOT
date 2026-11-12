@@ -1170,4 +1170,8 @@ client.on(Events.InteractionCreate, async interaction => {
 client.login(process.env.DISCORD_TOKEN);
 client.once('clientReady', () => {
     client.user.setStatus('dnd');
+    client.user.setPresence({
+    status: 'dnd',
+    activities: client.user.presence?.activities || []
+});
 });

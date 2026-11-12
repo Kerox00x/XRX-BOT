@@ -1166,7 +1166,12 @@ client.on(Events.InteractionCreate, async interaction => {
     }
   }
 });
-
+client.once('ready', () => {
+    console.log('XRX DND aktif!');
+    client.user.setPresence({
+        status: 'dnd'
+    });
+});
 client.login(process.env.DISCORD_TOKEN);
 client.once('clientReady', () => {
     client.user.setStatus('dnd');

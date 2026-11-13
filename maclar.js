@@ -105,7 +105,7 @@ async function fiksturleriGuncelle() {
 
     for (const takim of takimlar) {
         const sonuc = await apiGet(
-            `fixtures?team=${takim.id}&from=${from}&to=${to}`
+       `fixtures?team=${takim.id}&season=${bugun.getFullYear()}&from=${from}&to=${to}`
         );
 
         yeniFiksturler.push(...sonuc);

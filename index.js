@@ -1,5 +1,6 @@
 
 require('dotenv').config();
+const { baslatMacTakibi } = require('./maclar');
 
 const fs = require('node:fs');
 const path = require('node:path');
@@ -1177,10 +1178,14 @@ client.once('ready', () => {
     });
 });
 client.login(process.env.DISCORD_TOKEN);
+
 client.once('clientReady', () => {
     client.user.setStatus('dnd');
+
     client.user.setPresence({
-    status: 'dnd',
-    activities: client.user.presence?.activities || []
-});
+        status: 'dnd',
+        activities: client.user.presence?.activities || []
+    });
+
+    baslatMacTakibi(client);
 });

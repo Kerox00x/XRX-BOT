@@ -10,6 +10,8 @@ const DURUM_DOSYASI = path.join(__dirname, 'sportstats_maclar_durum.json');
 
 let durumlar = {};
 let kontrolDevamEdiyor = false;
+let fenerTakimId = null;
+let sonFiksturKontrol = 0;
 
 try {
     if (fs.existsSync(DURUM_DOSYASI)) {
@@ -98,11 +100,82 @@ async function mesajGonder(client, mesaj) {
     );
 }
 
+async function fenerbahceFiksturKontrol() {
+    if (Date.now() - sonFiksturKontrol < 6 * 60 * 60 * 1000) {
+        return;
+    }
+
+    try {
+        if (!fenerTakimId) {
+            const takimlar = await apiGet(
+                '/soccer/teams?q=Fenerbahce&limit=100'
+            );
+
+            const takim = takimlar.find(t => {
+                const isim = duzelt(t.name || t.display_name);
+
+                return isim.includes('fenerbahce') &&
+                    !t.is_women &&
+                    !/u\d+|women|kadin/.test(isim);
+            });
+
+            if (!takim) {
+                throw new Error('Fenerbahçe takım ID bulunamadı.');
+            }
+
+            fenerTakimId = takim.id;
+            console.log('Fenerbahçe ID bulundu:', fenerTakimId);
+        }
+
+        const bugun = new Date();
+        const sonGun = new Date(
+            Date.now() + 45 * 24 * 60 * 60 * 1000
+        );
+
+        const tarih = tarih => tarih.toISOString().slice(0, 10);
+
+        const maclar = await apiGet(
+            `/soccer/matches?team_id=${fenerTakimId}` +
+            `&date_from=${tarih(bugun)}` +
+            `&date_to=${tarih(sonGun)}&limit=100`
+        );
+
+        let yeniMac = 0;
+
+        for (const mac of maclar) {
+            const id = String(mac.id || mac.match_id || '');
+
+            if (!id || macBittiMi(mac)) continue;
+
+            if (!durumlar[id]) {
+                durumlar[id] = {
+                    hedef: '💛💙 Fenerbahçe',
+                    basladi: false,
+                    bitti: false
+                };
+
+                yeniMac++;
+            }
+        }
+
+        kaydet();
+        sonFiksturKontrol = Date.now();
+
+        console.log(
+            `Fenerbahçe fikstürü kontrol edildi. Yeni maç: ${yeniMac}`
+        );
+
+    } catch (hata) {
+        console.log('Fenerbahçe fikstür hatası:', hata.message);
+    }
+}
+
 async function macKontrol(client) {
     if (kontrolDevamEdiyor) return;
     kontrolDevamEdiyor = true;
 
     try {
+        await fenerbahceFiksturKontrol();
         const canliMaclar = await apiGet('/soccer/matches/live');
         const gorulenler = new Set();
 

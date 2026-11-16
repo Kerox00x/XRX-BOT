@@ -110,7 +110,7 @@ async function fenerbahceFiksturKontrol() {
             const takimlar = await apiGet(
                 '/soccer/teams?q=Fenerbahce&limit=100'
             );
-
+console.log('Fenerbahçe takım arama sonucu:', JSON.stringify(takimlar, null, 2));
             const takim = takimlar.find(t => {
                 const isim = duzelt(t.name || t.display_name);
 

@@ -123,7 +123,7 @@ console.log('Fenerbahçe takım arama sonucu:', JSON.stringify(takimlar, null, 2
                 throw new Error('Fenerbahçe takım ID bulunamadı.');
             }
 
-            fenerTakimId = takim.id;
+            fenerTakimId = takim.code;
             console.log('Fenerbahçe ID bulundu:', fenerTakimId);
         }
 

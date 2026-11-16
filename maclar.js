@@ -160,7 +160,8 @@ console.log('Fenerbahçe takım arama sonucu:', JSON.stringify(takimlar, null, 2
 
         kaydet();
         sonFiksturKontrol = Date.now();
-
+console.log('API fikstür maç sayısı:', maclar.length);
+console.log('API fikstür verisi:', JSON.stringify(maclar, null, 2));
         console.log(
             `Fenerbahçe fikstürü kontrol edildi. Yeni maç: ${yeniMac}`
         );

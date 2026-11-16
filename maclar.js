@@ -182,7 +182,7 @@ async function macKontrol(client) {
 
         for (const mac of canliMaclar) {
             const hedef = hedefTakim(mac);
-            const id = String(mac.id || mac.match_id || '');
+            String(mac.id || mac.match_id || mac.code || '')
 
             if (!hedef || !id) continue;
 
